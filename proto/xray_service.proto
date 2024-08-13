@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package xrayservice;
+
+option go_package = "proto/xrayservice";
+
+// Service definition for XrayService
+service XrayService {
+    rpc Start (StartRequest) returns (StartResponse);
+    rpc Stop (StopRequest) returns (StopResponse);
+    rpc Restart (RestartRequest) returns (RestartResponse);
+    rpc FetchXrayVersion (FetchXrayVersionRequest) returns (FetchXrayVersionResponse);
+    rpc FetchLogs (FetchLogsRequest) returns (stream LogMessage);
+}
+
+// Request and Response messages
+message StartRequest {
+    string config = 1;
+}
+
+message StartResponse {
+    string message = 1;
+}
+
+message StopRequest {}
+
+message StopResponse {
+    string message = 1;
+}
+
+message RestartRequest {
+    string config = 1;
+}
+
+message RestartResponse {
+    string message = 1;
+}
+
+message FetchXrayVersionRequest {}
+
+message FetchXrayVersionResponse {
+    string version = 1;
+}
+
+message FetchLogsRequest {}
+
+message LogMessage {
+    string log = 1;
+}
