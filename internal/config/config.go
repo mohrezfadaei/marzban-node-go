@@ -1,35 +1,26 @@
 package config
 
 import (
-	"github.com/spf13/viper"
+	"github.com/kelseyhightower/envconfig"
 )
 
 type Config struct {
-	ServicePort        int    `mapstructure:"SERVICE_PORT"`
-	XrayApiPort        int    `mapstructure:"XRAY_API_PORT"`
-	XrayExecutablePath string `mapstructure:"XRAY_EXECUTABLE_PATH"`
-	XrayAssetsPath     string `mapstructure:"XRAY_ASSETS_PATH"`
-	SslCertFile        string `mapstructure:"SSL_CERT_FILE"`
-	SslKeyFile         string `mapstructure:"SSL_KEY_FILE"`
-	SslClientCertFile  string `mapstructure:"SSL_CLIENT_CERT_FILE"`
-	Debug              bool   `mapstructure:"DEBUG"`
-	ServiceProtocol    string `mapstructure:"SERVICE_PROTOCOL"`
+	ServicePort        int    `envconfig:"SERVICE_PORT" default:"62050"`
+	XrayApiPort        int    `envconfig:"XRAY_API_PORT" default:"62051"`
+	XrayExecutablePath string `envconfig:"XRAY_EXECUTABLE_PATH" default:"/usr/local/bin/xray"`
+	XrayAssetsPath     string `envconfig:"XRAY_ASSETS_PATH" default:"/usr/local/share/xray"`
+	SslCertFile        string `envconfig:"SSL_CERT_FILE" default:"/var/lib/marzban-node/ssl_cert.pem"`
+	SslKeyFile         string `envconfig:"SSL_KEY_FILE" default:"/var/lib/marzban-node/ssl_key.pem"`
+	SslClientCertFile  string `envconfig:"SSL_CLIENT_CERT_FILE" default:""`
+	Debug              bool   `envconfig:"DEBUG" default:"false"`
+	ServiceProtocol    string `envconfig:"SERVICE_PROTOCOL" default:"rpyc"`
 }
 
 func LoadConfig() (*Config, error) {
-	viper.AddConfigPath(".")
-	viper.SetConfigName(".env")
-	viper.SetConfigType("env")
-	viper.AutomaticEnv()
-
-	if err := viper.ReadInConfig(); err != nil {
-		return nil, err
-	}
-
 	var config Config
-	if err := viper.Unmarshal(&config); err != nil {
+	err := envconfig.Process("", &config)
+	if err != nil {
 		return nil, err
 	}
-
 	return &config, nil
 }
