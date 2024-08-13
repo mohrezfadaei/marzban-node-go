@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/mohrezfadaei/marzban-node-go/internal/certificate"
 	"github.com/mohrezfadaei/marzban-node-go/internal/config"
@@ -15,6 +16,12 @@ func generateSSLFiles(certFile, keyFile string) {
 	certPem, keyPem, err := certificate.GenerateCertificate()
 	if err != nil {
 		log.Fatalf("Failed to generate certificate: %v", err)
+	}
+
+	// Ensure the directory exists
+	certDir := filepath.Dir(certFile)
+	if err := os.MkdirAll(certDir, 0755); err != nil {
+		log.Fatalf("Failed to create certificate directory: %v", err)
 	}
 
 	if err := os.WriteFile(certFile, []byte(certPem), 0644); err != nil {
@@ -32,7 +39,14 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	if _, err := os.Stat(conf.SslCertFile); os.IsNotExist(err) || os.IsNotExist(err) {
+	if conf.SslCertFile == "" || conf.SslKeyFile == "" {
+		log.Fatalf("SSL_CERT_FILE or SSL_KEY_FILE not specified in configuration")
+	}
+
+	// Check if SSL certificate and key files exist
+	if _, err := os.Stat(conf.SslCertFile); os.IsNotExist(err) {
+		generateSSLFiles(conf.SslCertFile, conf.SslKeyFile)
+	} else if _, err := os.Stat(conf.SslKeyFile); os.IsNotExist(err) {
 		generateSSLFiles(conf.SslCertFile, conf.SslKeyFile)
 	}
 
